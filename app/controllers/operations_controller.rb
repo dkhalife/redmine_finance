@@ -110,7 +110,10 @@ class OperationsController < ApplicationController
     @operation.account ||= @project.accounts.find((params[:operation] && params[:operation][:account_id]) || params[:account_id] || :first)
     @operation.safe_attributes = params[:operation]
     @operation.author = User.current
-    update_operation_time
+    
+	if params[:operation_time] && params[:operation_time].to_s.gsub(/\s/, "").match(/^(\d{1,2}):(\d{1,2})$/)
+      @operation.operation_date = @operation.operation_date.change({ :hour => $1.to_i % 24, :min => $2.to_i % 60}) if @operation.operation_date.present?
+    end
 
     if @operation.save
       # <PRO>
@@ -134,7 +137,12 @@ class OperationsController < ApplicationController
   def update
     (render_403; return false) unless @operation.editable_by?(User.current)
     @operation.safe_attributes = params[:operation]
-    update_operation_time
+    
+	if params[:operation_time] && params[:operation_time].to_s.gsub(/\s/, "").match(/^(\d{1,2}):(\d{1,2})$/)
+	  # [BUG WORKAROUND] day is always decremented by 1 after each update, so adding +1 here for now
+      @operation.operation_date = @operation.operation_date.change({:day => @operation.operation_date.day + 1, :hour => $1.to_i % 24, :min => $2.to_i % 60}) if @operation.operation_date.present?
+    end
+	
     if @operation.save
       # <PRO>
       attachments = Attachment.attach_files(@operation, (params[:attachments] || (params[:operation] && params[:operation][:uploads])))
@@ -293,11 +301,4 @@ class OperationsController < ApplicationController
     end
     attributes
   end
-
-  def update_operation_time
-    if params[:operation_time] && params[:operation_time].to_s.gsub(/\s/, "").match(/^(\d{1,2}):(\d{1,2})$/)
-      @operation.operation_date = @operation.operation_date.change({:day => @operation.operation_date.day, :hour => $1.to_i % 24, :min => $2.to_i % 60}) if @operation.operation_date.present?
-    end
-  end
-
 end
