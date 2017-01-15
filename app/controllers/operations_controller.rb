@@ -111,7 +111,7 @@ class OperationsController < ApplicationController
     @operation.safe_attributes = params[:operation]
     @operation.author = User.current
     
-	if params[:operation_time] && params[:operation_time].to_s.gsub(/\s/, "").match(/^(\d{1,2}):(\d{1,2})$/)
+    if params[:operation_time] && params[:operation_time].to_s.gsub(/\s/, "").match(/^(\d{1,2}):(\d{1,2})$/)
       @operation.operation_date = @operation.operation_date.change({ :hour => $1.to_i % 24, :min => $2.to_i % 60}) if @operation.operation_date.present?
     end
 
@@ -120,11 +120,14 @@ class OperationsController < ApplicationController
       attachments = Attachment.attach_files(@operation, (params[:attachments] || (params[:operation] && params[:operation][:uploads])))
       render_attachment_warning_if_needed(@operation)
       # </PRO>
-	  if params[:related_to]
-        @relation = OperationRelation.new(params[:related_to])
-        @relation.operation_source = @operation
-        @relation.relation_type = 0
-		@relation.save
+
+	  if params[:operation][:related_to]
+            related_to = Hash.new
+            related_to["destination_id"] = params[:operation][:related_to]
+            @relation = OperationRelation.new(related_to)
+            @relation.operation_source = @operation
+            @relation.relation_type = 0
+	    @relation.save
 	  end
 
       flash[:notice] = l(:notice_successful_create)
