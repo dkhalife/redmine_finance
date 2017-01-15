@@ -2,6 +2,10 @@
 
 <div class="box tabular attributes">
 
+<% if params[:copy_from] %>
+<input type="hidden" name="operation[related_to]" value="<%= params[:copy_from] %>" />
+<% end %>
+
 <div class="splitcontentleft">
   <p class="type"><%= f.select :income, operation_types_for_select(@operation.is_income?), :label => l(:label_operation_type), :required => true %></p>
   <p class="category"><%= f.select :category_id, operation_category_tree_options_for_select(operation_categories_for_select, :selected => @operation.category), :label => l(:label_operation_category), :required => true %></p>

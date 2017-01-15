@@ -120,6 +120,13 @@ class OperationsController < ApplicationController
       attachments = Attachment.attach_files(@operation, (params[:attachments] || (params[:operation] && params[:operation][:uploads])))
       render_attachment_warning_if_needed(@operation)
       # </PRO>
+	  if params[:related_to]
+        @relation = OperationRelation.new(params[:related_to])
+        @relation.operation_source = @operation
+        @relation.relation_type = 0
+		@relation.save
+	  end
+
       flash[:notice] = l(:notice_successful_create)
 
       respond_to do |format|
