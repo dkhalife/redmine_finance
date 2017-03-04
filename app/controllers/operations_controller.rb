@@ -61,6 +61,7 @@ class OperationsController < ApplicationController
         :offset =>  @offset
       )
       @accounts = @project ? @project.accounts.visible : Account.visible
+	  @accounts = @accounts.order("#{Account.table_name}.name")
       @approved_amount_by_account = Operation.amount_by_account(true)
 
       if RedmineFinance.operations_approval?
