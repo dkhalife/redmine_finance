@@ -93,6 +93,7 @@ module OperationsHelper
 
   def accounts_for_select(project)
     scope = project ? project.accounts : Account.where({})
+	scope = scope.order("#{Account.table_name}.name")
     scope.all.map{|a| ["#{a.name} (#{a.currency})", a.id.to_s]}
   end
 
